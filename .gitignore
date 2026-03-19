@@ -1,0 +1,13 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Android
+local.properties
+.idea/
+*.iml
+.DS_Store
+
+# Secrets
+.env
