@@ -17,6 +17,7 @@
 plugins {
     id("com.android.application")
     kotlin("android")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -40,15 +41,33 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
+}
+
+secrets {
+    // To add your Maps API key to this project:
+    // 1. Open the secrets.properties file
+    // 2. Add this line, where YOUR_API_KEY is your API key:
+    //        MAPS_API_KEY=YOUR_API_KEY
+    propertiesFileName = "secrets.properties"
+
+    // A properties file, similar to propertiesFileName, that contains default values for
+    // any keys not found in propertiesFileName.
+    defaultPropertiesFileName = "secrets.properties.example"
+
+    // Configure which keys should be ignored by the plugin by providing regular expressions.
+    // "sdk.dir" is ignored by default.
+    ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+    ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
 }
 
 dependencies {
@@ -70,6 +89,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
 }

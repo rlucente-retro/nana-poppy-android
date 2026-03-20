@@ -36,11 +36,11 @@ class SettingsRepository(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("nana_poppy_prefs", Context.MODE_PRIVATE)
 
     var owmApiKey: String?
-        get() = securePrefs.getString("owm_api_key", null)
+        get() = securePrefs.getString("owm_api_key", null) ?: com.nanapoppy.BuildConfig.OWM_API_KEY
         set(value) = securePrefs.edit().putString("owm_api_key", value).apply()
 
     var zipUrl: String?
-        get() = securePrefs.getString("zip_url", null)
+        get() = securePrefs.getString("zip_url", null) ?: com.nanapoppy.BuildConfig.ZIP_URL
         set(value) = securePrefs.edit().putString("zip_url", value).apply()
 
     var location1Query: String

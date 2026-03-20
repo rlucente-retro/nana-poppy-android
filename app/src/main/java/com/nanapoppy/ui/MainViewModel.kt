@@ -32,18 +32,23 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.time.LocalDateTime
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
-    private val settings = SettingsRepository(application)
-    private val player = AudioQueuePlayer(application)
+class MainViewModel(
+    application: Application,
+    private val weatherService: WeatherService = createWeatherService(),
+    private val settings: SettingsRepository = SettingsRepository(application),
+    private val player: AudioQueuePlayer = AudioQueuePlayer(application)
+) : AndroidViewModel(application) {
     private val _isPlaying = MutableLiveData<Boolean>(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
 
-    private val weatherService: WeatherService by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://api.openweathermap.org/data/2.5/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(WeatherService::class.java)
+    companion object {
+        private fun createWeatherService(): WeatherService {
+            return Retrofit.Builder()
+                .baseUrl("https://api.openweathermap.org/data/2.5/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(WeatherService::class.java)
+        }
     }
 
     fun play() {
