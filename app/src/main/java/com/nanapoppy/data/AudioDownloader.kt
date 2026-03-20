@@ -26,19 +26,61 @@ import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 
 class AudioDownloader(private val context: Context) {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .followRedirects(true)
+        .build()
+
+    private fun convertGoogleDriveUrl(url: String): String {
+        if (!url.contains("drive.google.com")) return url
+        
+        val fileId = when {
+            url.contains("/file/d/") -> {
+                url.substringAfter("/file/d/").substringBefore("/")
+            }
+            url.contains("id=") -> {
+                url.substringAfter("id=").substringBefore("&")
+            }
+            else -> return url
+        }
+        
+        return "https://drive.google.com/uc?export=download&id=$fileId"
+    }
 
     suspend fun downloadAndUnzip(url: String): Boolean = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(url).build()
+        val convertedUrl = convertGoogleDriveUrl(url)
+        val request = Request.Builder().url(convertedUrl).build()
         try {
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) return@withContext false
 
-            val inputStream = response.body?.byteStream() ?: return@withContext false
-            val audioDir = File(context.filesDir, "audio")
+            val body = response.body ?: return@withContext false
+            val contentType = body.contentType()?.toString()
             
-            // Clear existing audio if needed, or just overwrite
-            // For now, we'll just unzip over existing files
+            // If we got an HTML page instead of a zip, it might be a Google Drive "large file" warning
+            // or just the wrong page.
+            if (contentType?.contains("text/html") == true) {
+                val html = body.string()
+                if (html.contains("confirm=")) {
+                    val confirmToken = html.substringAfter("confirm=").substringBefore("&")
+                    val confirmUrl = "$convertedUrl&confirm=$confirmToken"
+                    val confirmRequest = Request.Builder().url(confirmUrl).build()
+                    val confirmResponse = client.newCall(confirmRequest).execute()
+                    if (!confirmResponse.isSuccessful) return@withContext false
+                    return@withContext unzipStream(confirmResponse.body?.byteStream() ?: return@withContext false)
+                }
+                return@withContext false
+            }
+
+            unzipStream(body.byteStream())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private fun unzipStream(inputStream: java.io.InputStream): Boolean {
+        try {
+            val audioDir = File(context.filesDir, "audio")
             if (!audioDir.exists()) audioDir.mkdirs()
 
             ZipInputStream(inputStream).use { zipInputStream ->
@@ -46,7 +88,6 @@ class AudioDownloader(private val context: Context) {
                 while (entry != null) {
                     val file = File(audioDir, entry.name)
                     
-                    // Simple path traversal protection
                     if (!file.canonicalPath.startsWith(audioDir.canonicalPath)) {
                         throw SecurityException("Zip Path Traversal Vulnerability")
                     }
@@ -63,10 +104,10 @@ class AudioDownloader(private val context: Context) {
                     entry = zipInputStream.nextEntry
                 }
             }
-            true
+            return true
         } catch (e: Exception) {
             e.printStackTrace()
-            false
+            return false
         }
     }
 }

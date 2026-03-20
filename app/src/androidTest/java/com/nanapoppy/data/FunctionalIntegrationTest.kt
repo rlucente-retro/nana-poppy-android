@@ -72,10 +72,9 @@ class FunctionalIntegrationTest {
     @Test
     fun testAudioDownloadIntegration() = runBlocking {
         val zipUrl = BuildConfig.ZIP_URL
-        // Skip if ZIP URL is the default/example one or a drive link (which is not a direct download)
+        // Skip if ZIP URL is the default/example one or empty
         if (zipUrl == "https://example.com/your_audio_assets.zip" || 
-            zipUrl.isBlank() || 
-            zipUrl.contains("drive.google.com")) {
+            zipUrl.isBlank()) {
             return@runBlocking
         }
 
