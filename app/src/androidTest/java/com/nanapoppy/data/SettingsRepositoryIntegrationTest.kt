@@ -29,7 +29,7 @@ import com.nanapoppy.BuildConfig
 class SettingsRepositoryIntegrationTest {
 
     @Test
-    fun `owmApiKey returns BuildConfig value when preference is null`() {
+    fun owmApiKey_returns_BuildConfig_value_when_preference_is_null() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val repository = SettingsRepository(context)
 

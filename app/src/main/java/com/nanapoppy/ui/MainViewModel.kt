@@ -32,7 +32,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.time.LocalDateTime
 
-class MainViewModel(
+class MainViewModel @JvmOverloads constructor(
     application: Application,
     private val weatherService: WeatherService = createWeatherService(),
     private val settings: SettingsRepository = SettingsRepository(application),
