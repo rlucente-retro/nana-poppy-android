@@ -46,31 +46,36 @@ class WeatherServiceTest {
     }
 
     @Test
-    fun `getCurrentWeather returns successful response`() = runBlocking {
-        val mockResponse = MockResponse()
-            .setResponseCode(200)
-            .setBody("""
-                {
-                    "main": {
-                        "temp": 72.5
-                    },
-                    "name": "Test City"
-                }
-            """.trimIndent())
-        mockWebServer.enqueue(mockResponse)
+    fun `getCurrentWeather returns successful response`() {
+        runBlocking {
+            val mockResponse = MockResponse()
+                .setResponseCode(200)
+                .setBody("""
+                    {
+                        "main": {
+                            "temp": 72.5
+                        },
+                        "name": "Test City"
+                    }
+                """.trimIndent())
+            mockWebServer.enqueue(mockResponse)
 
-        val response = service.getCurrentWeather("Test City", "fake_key")
+            val response = service.getCurrentWeather("Test City", "fake_key")
 
-        assertEquals(72.5f, response.main.temp)
-        assertEquals("Test City", response.name)
+            assertEquals(72.5f, response.main.temp)
+            assertEquals("Test City", response.name)
+        }
+    }
 
     @Test(expected = retrofit2.HttpException::class)
-    fun `getCurrentWeather throws exception on 401 error`() = runBlocking {
-        val mockResponse = MockResponse()
-            .setResponseCode(401)
-            .setBody("""{"cod":401, "message": "Invalid API key"}""")
-        mockWebServer.enqueue(mockResponse)
+    fun `getCurrentWeather throws exception on 401 error`() {
+        runBlocking {
+            val mockResponse = MockResponse()
+                .setResponseCode(401)
+                .setBody("""{"cod":401, "message": "Invalid API key"}""")
+            mockWebServer.enqueue(mockResponse)
 
-        service.getCurrentWeather("Test City", "invalid_key")
+            service.getCurrentWeather("Test City", "invalid_key")
+        }
     }
 }
