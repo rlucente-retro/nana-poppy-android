@@ -43,6 +43,12 @@ class MainActivity : AppCompatActivity() {
             binding.btnPlay.isEnabled = !isPlaying
             binding.progressBar.visibility = if (isPlaying) View.VISIBLE else View.GONE
         }
+
+        viewModel.status.observe(this) { status ->
+            status?.let {
+                android.widget.Toast.makeText(this, it, android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

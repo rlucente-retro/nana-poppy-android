@@ -62,11 +62,23 @@ class FunctionalIntegrationTest {
             return@runBlocking
         }
 
-        val response = weatherService.getCurrentWeather("New York", apiKey)
-        assertNotNull("Weather response should not be null", response)
-        assertNotNull("Main data should not be null", response.main)
-        assertTrue("Temperature should be a valid number", response.main.temp != 0f)
-        assertEquals("New York", response.name)
+        // Test location 1
+        val loc1 = BuildConfig.LOCATION1_QUERY
+        if (loc1.isNotBlank()) {
+            val response1 = weatherService.getCurrentWeather(loc1, apiKey)
+            assertNotNull("Weather response for $loc1 should not be null", response1)
+            assertNotNull("Main data for $loc1 should not be null", response1.main)
+            assertTrue("Temperature for $loc1 should be a valid number", response1.main.temp != 0f)
+        }
+
+        // Test location 2
+        val loc2 = BuildConfig.LOCATION2_QUERY
+        if (loc2.isNotBlank()) {
+            val response2 = weatherService.getCurrentWeather(loc2, apiKey)
+            assertNotNull("Weather response for $loc2 should not be null", response2)
+            assertNotNull("Main data for $loc2 should not be null", response2.main)
+            assertTrue("Temperature for $loc2 should be a valid number", response2.main.temp != 0f)
+        }
     }
 
     @Test

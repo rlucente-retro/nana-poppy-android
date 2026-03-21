@@ -78,17 +78,51 @@ class AudioDownloader(private val context: Context) {
         }
     }
 
+    data class ValidationResult(
+        val children: List<ChildStatus>
+    )
+
+    data class ChildStatus(
+        val name: String,
+        val missingPhrases: List<String>
+    )
+
+    fun validate(): ValidationResult {
+        val phraseList = try {
+            context.assets.open("phrase-list.txt").bufferedReader().useLines { lines ->
+                lines.map { it.trim() }.filter { it.isNotEmpty() }.toList()
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+
+        val audioDir = File(context.filesDir, "audio")
+        val children = audioDir.listFiles { file -> file.isDirectory } ?: emptyArray()
+
+        val results = children.map { childDir ->
+            val existingPhrases = childDir.listFiles { file -> file.extension == "mp3" }
+                ?.map { it.nameWithoutExtension }
+                ?.toSet() ?: emptySet()
+
+            val missing = phraseList.filter { !existingPhrases.contains(it) }
+            ChildStatus(childDir.name, missing)
+        }
+
+        return ValidationResult(results)
+    }
+
     private fun unzipStream(inputStream: java.io.InputStream): Boolean {
         try {
             val audioDir = File(context.filesDir, "audio")
             if (!audioDir.exists()) audioDir.mkdirs()
 
             ZipInputStream(inputStream).use { zipInputStream ->
+                val audioDirCanonicalPath = audioDir.canonicalPath + File.separator
                 var entry = zipInputStream.nextEntry
                 while (entry != null) {
                     val file = File(audioDir, entry.name)
                     
-                    if (!file.canonicalPath.startsWith(audioDir.canonicalPath)) {
+                    if (!file.canonicalPath.startsWith(audioDirCanonicalPath)) {
                         throw SecurityException("Zip Path Traversal Vulnerability")
                     }
 

@@ -70,11 +70,45 @@ class SettingsActivity : AppCompatActivity() {
             val success = downloader.downloadAndUnzip(zipUrl)
 
             if (success) {
-                Toast.makeText(this@SettingsActivity, "Sync Complete", Toast.LENGTH_SHORT).show()
+                val validation = downloader.validate()
+                showValidationDialog(validation)
             } else {
                 Toast.makeText(this@SettingsActivity, "Sync Failed", Toast.LENGTH_SHORT).show()
             }
             binding.btnSync.isEnabled = true
         }
+    }
+
+    private fun showValidationDialog(result: AudioDownloader.ValidationResult) {
+        val message = StringBuilder()
+        if (result.children.isEmpty()) {
+            message.append("No children found in the zip file.")
+        } else {
+            result.children.forEach { child ->
+                message.append("Child: ${child.name}\n")
+                if (child.missingPhrases.isEmpty()) {
+                    message.append("✓ All phrases present\n")
+                } else {
+                    message.append("✗ Missing: ${child.missingPhrases.joinToString(", ")}\n")
+                }
+                message.append("\n")
+            }
+        }
+
+        val textView = android.widget.TextView(this).apply {
+            text = message.toString()
+            setPadding(48, 24, 48, 24)
+            setTextIsSelectable(true)
+        }
+
+        val scrollView = android.widget.ScrollView(this).apply {
+            addView(textView)
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Sync Complete")
+            .setView(scrollView)
+            .setPositiveButton("OK", null)
+            .show()
     }
 }

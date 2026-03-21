@@ -17,13 +17,12 @@
 package com.nanapoppy.player
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.net.Uri
 import java.io.File
 
 class AudioQueuePlayer(private val context: Context) {
     private var mediaPlayer: MediaPlayer? = null
-    private var nextMediaPlayer: MediaPlayer? = null
     private val queue = mutableListOf<String>()
     private var currentChildId: String = ""
     private var onComplete: (() -> Unit)? = null
@@ -34,7 +33,7 @@ class AudioQueuePlayer(private val context: Context) {
         this.queue.addAll(words)
         this.onComplete = onComplete
         
-        release()
+        stopAndRelease()
         playNext()
     }
 
@@ -45,69 +44,65 @@ class AudioQueuePlayer(private val context: Context) {
         }
 
         val word = queue.removeAt(0)
-        val file = File(context.filesDir, "audio/$currentChildId/$word.wav")
+        val file = File(context.filesDir, "audio/$currentChildId/$word.mp3")
         
         if (!file.exists()) {
             playNext()
             return
         }
 
-        mediaPlayer = MediaPlayer.create(context, Uri.fromFile(file))
-        if (mediaPlayer == null) {
-            playNext()
-            return
-        }
-
-        setupNextPlayer()
-        
-        mediaPlayer?.setOnCompletionListener {
-            it.release()
-            mediaPlayer = nextMediaPlayer
-            nextMediaPlayer = null
-            if (mediaPlayer != null) {
-                setupNextPlayer()
-                mediaPlayer?.start()
-            } else {
-                onComplete?.invoke()
+        try {
+            mediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
+                
+                java.io.FileInputStream(file).use { fis ->
+                    setDataSource(fis.fd)
+                    prepare()
+                }
+                
+                setOnCompletionListener {
+                    it.release()
+                    mediaPlayer = null
+                    playNext()
+                }
+                
+                setOnErrorListener { mp, _, _ ->
+                    mp.release()
+                    mediaPlayer = null
+                    playNext()
+                    true
+                }
+                
+                start()
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            mediaPlayer?.release()
+            mediaPlayer = null
+            playNext()
         }
-        mediaPlayer?.start()
     }
 
-    private fun setupNextPlayer() {
-        if (queue.isEmpty()) return
-
-        val word = queue.removeAt(0)
-        val file = File(context.filesDir, "audio/$currentChildId/$word.wav")
-        
-        if (!file.exists()) {
-            setupNextPlayer()
-            return
-        }
-
-        nextMediaPlayer = MediaPlayer.create(context, Uri.fromFile(file))
-        if (nextMediaPlayer == null) {
-            setupNextPlayer()
-            return
-        }
-
-        mediaPlayer?.setNextMediaPlayer(nextMediaPlayer)
-        nextMediaPlayer?.setOnCompletionListener { mp ->
-            mp.release()
-            mediaPlayer = nextMediaPlayer
-            nextMediaPlayer = null
-            if (mediaPlayer != null) {
-                setupNextPlayer()
-            } else {
-                onComplete?.invoke()
+    private fun stopAndRelease() {
+        mediaPlayer?.let {
+            try {
+                if (it.isPlaying) {
+                    it.stop()
+                }
+            } catch (e: Exception) {
+                // Ignore
             }
+            it.release()
         }
+        mediaPlayer = null
     }
 
     fun release() {
-        mediaPlayer?.release()
-        mediaPlayer = null
-        nextMediaPlayer?.release()
-        nextMediaPlayer = null
+        stopAndRelease()
     }
 }

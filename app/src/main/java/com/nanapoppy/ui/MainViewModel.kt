@@ -27,6 +27,8 @@ import com.nanapoppy.player.AudioQueuePlayer
 import com.nanapoppy.utils.ChildSelector
 import com.nanapoppy.utils.MessageGenerator
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
@@ -41,25 +43,42 @@ class MainViewModel @JvmOverloads constructor(
     private val _isPlaying = MutableLiveData<Boolean>(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
 
+    private val _status = MutableLiveData<String?>()
+    val status: LiveData<String?> = _status
+
     companion object {
         private fun createWeatherService(): WeatherService {
+            val logging = HttpLoggingInterceptor()
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+            val client = OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .build()
+
             return Retrofit.Builder()
                 .baseUrl("https://api.openweathermap.org/data/2.5/")
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
                 .build()
                 .create(WeatherService::class.java)
         }
     }
 
     fun play() {
-        if (!settings.isConfigured()) return
+        if (!settings.isConfigured()) {
+            _status.value = "Please configure settings first"
+            return
+        }
         
         val audioDir = File(getApplication<Application>().filesDir, "audio")
         val availableChildren = audioDir.listFiles { file -> file.isDirectory }?.map { it.name } ?: emptyList()
         
-        if (availableChildren.isEmpty()) return
+        if (availableChildren.isEmpty()) {
+            _status.value = "No audio files found. Please sync in settings."
+            return
+        }
 
         _isPlaying.value = true
+        _status.value = null
         viewModelScope.launch {
             val now = LocalDateTime.now()
             val temp1 = fetchWeather(settings.location1Query)
@@ -84,7 +103,13 @@ class MainViewModel @JvmOverloads constructor(
         return try {
             val response = weatherService.getCurrentWeather(location, settings.owmApiKey!!)
             response.main.temp.toInt()
+        } catch (e: retrofit2.HttpException) {
+            val errorBody = e.response()?.errorBody()?.string()
+            _status.postValue("Weather API Error ($location): ${e.code()} $errorBody")
+            null
         } catch (e: Exception) {
+            e.printStackTrace()
+            _status.postValue("Weather Network Error ($location): ${e.message}")
             null
         }
     }
