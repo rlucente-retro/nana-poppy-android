@@ -109,7 +109,7 @@ Each child's directory must include the following MP3 files. Filenames must matc
 | `thirty`, `forty`, `fifty`, `sixty` | Cardinal numbers |
 | `seventy`, `eighty`, `ninety`, `hundred` | Cardinal numbers |
 
-> **Note:** For a complete list of required filenames, refer to the `phrase-list.txt` file in the project root.
+> **Note:** For a complete list of required filenames, refer to the [`phrase-list.txt`]( app/src/main/assets/phrase-list.txt) file.
 
 ### Recording Tips
 
