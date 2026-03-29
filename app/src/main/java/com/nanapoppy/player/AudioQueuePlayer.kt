@@ -17,89 +17,75 @@
 package com.nanapoppy.player
 
 import android.content.Context
-import android.media.AudioAttributes
-import android.media.MediaPlayer
+import android.net.Uri
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import java.io.File
 
 class AudioQueuePlayer(private val context: Context) {
-    private var mediaPlayer: MediaPlayer? = null
-    private val queue = mutableListOf<String>()
-    private var currentChildId: String = ""
+    private var exoPlayer: ExoPlayer? = null
     private var onComplete: (() -> Unit)? = null
 
-    fun playQueue(childId: String, words: List<String>, onComplete: () -> Unit) {
-        this.currentChildId = childId
-        this.queue.clear()
-        this.queue.addAll(words)
-        this.onComplete = onComplete
-        
-        stopAndRelease()
-        playNext()
+    private val playerListener = object : Player.Listener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_ENDED) {
+                onComplete?.invoke()
+            }
+        }
     }
 
-    private fun playNext() {
-        if (queue.isEmpty()) {
-            onComplete?.invoke()
-            return
+    private fun ensurePlayer(): ExoPlayer {
+        return exoPlayer ?: ExoPlayer.Builder(context).build().apply {
+            val audioAttributes = AudioAttributes.Builder()
+                .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
+                .setUsage(C.USAGE_MEDIA)
+                .build()
+            setAudioAttributes(audioAttributes, true)
+            addListener(playerListener)
+            exoPlayer = this
         }
+    }
 
-        val word = queue.removeAt(0)
-        val file = File(context.filesDir, "audio/$currentChildId/$word.mp3")
-        
-        if (!file.exists()) {
-            playNext()
-            return
-        }
+    fun playPlaylist(segments: List<Pair<String, List<String>>>, onComplete: () -> Unit) {
+        this.onComplete = onComplete
+        val player = ensurePlayer()
+        player.stop()
+        player.clearMediaItems()
 
-        try {
-            mediaPlayer = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-                )
-                
-                java.io.FileInputStream(file).use { fis ->
-                    setDataSource(fis.fd)
-                    prepare()
+        val mediaItems = mutableListOf<MediaItem>()
+        segments.forEach { (childId, words) ->
+            words.forEach { word ->
+                val file = File(context.filesDir, "audio/$childId/$word.mp3")
+                if (file.exists()) {
+                    mediaItems.add(MediaItem.fromUri(Uri.fromFile(file)))
                 }
-                
-                setOnCompletionListener {
-                    it.release()
-                    mediaPlayer = null
-                    playNext()
-                }
-                
-                setOnErrorListener { mp, _, _ ->
-                    mp.release()
-                    mediaPlayer = null
-                    playNext()
-                    true
-                }
-                
-                start()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            mediaPlayer?.release()
-            mediaPlayer = null
-            playNext()
         }
+
+        if (mediaItems.isEmpty()) {
+            onComplete()
+            return
+        }
+
+        player.setMediaItems(mediaItems)
+        player.prepare()
+        player.play()
+    }
+
+    fun playQueue(childId: String, words: List<String>, onComplete: () -> Unit) {
+        playPlaylist(listOf(childId to words), onComplete)
     }
 
     private fun stopAndRelease() {
-        mediaPlayer?.let {
-            try {
-                if (it.isPlaying) {
-                    it.stop()
-                }
-            } catch (e: Exception) {
-                // Ignore
-            }
+        exoPlayer?.let {
+            it.removeListener(playerListener)
+            it.stop()
             it.release()
         }
-        mediaPlayer = null
+        exoPlayer = null
     }
 
     fun release() {

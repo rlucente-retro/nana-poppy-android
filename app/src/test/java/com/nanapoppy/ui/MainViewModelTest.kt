@@ -87,7 +87,7 @@ class MainViewModelTest {
         coVerify { weatherService.getCurrentWeather("Waynesboro,PA", "fake_key") }
         coVerify { weatherService.getCurrentWeather("Ocean City,MD", "fake_key") }
         
-        // Verify that the player was called to play the queue
-        verify { player.playQueue(any(), any(), any()) }
+        // Verify that the player was called to play the playlist
+        verify { player.playPlaylist(any(), any()) }
     }
 }

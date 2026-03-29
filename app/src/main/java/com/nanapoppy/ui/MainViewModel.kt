@@ -95,7 +95,9 @@ class MainViewModel @JvmOverloads constructor(
                 selectedChildren[3] to MessageGenerator.generateTempMsg("location2", temp2)
             )
 
-            playMessagesSequentially(messages, 0)
+            player.playPlaylist(messages) {
+                _isPlaying.postValue(false)
+            }
         }
     }
 
@@ -111,18 +113,6 @@ class MainViewModel @JvmOverloads constructor(
             e.printStackTrace()
             _status.postValue("Weather Network Error ($location): ${e.message}")
             null
-        }
-    }
-
-    private fun playMessagesSequentially(messages: List<Pair<String, List<String>>>, index: Int) {
-        if (index >= messages.size) {
-            _isPlaying.postValue(false)
-            return
-        }
-
-        val (childId, words) = messages[index]
-        player.playQueue(childId, words) {
-            playMessagesSequentially(messages, index + 1)
         }
     }
 
