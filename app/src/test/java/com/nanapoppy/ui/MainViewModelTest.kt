@@ -69,23 +69,23 @@ class MainViewModelTest {
     fun `play calls weather service and plays messages when configured`() = runTest {
         // Arrange
         every { settings.isConfigured() } returns true
-        every { settings.location1Query } returns "Waynesboro,PA"
-        every { settings.location2Query } returns "Ocean City,MD"
+        every { settings.location1Query } returns "Waynesboro,PA,US"
+        every { settings.location2Query } returns "Ocean City,MD,US"
         every { settings.owmApiKey } returns "fake_key"
 
         val mockWeatherResponse1 = WeatherResponse(MainData(72.5f), "Waynesboro")
         val mockWeatherResponse2 = WeatherResponse(MainData(65.0f), "Ocean City")
 
-        coEvery { weatherService.getCurrentWeather("Waynesboro,PA", "fake_key") } returns mockWeatherResponse1
-        coEvery { weatherService.getCurrentWeather("Ocean City,MD", "fake_key") } returns mockWeatherResponse2
+        coEvery { weatherService.getCurrentWeather("Waynesboro,PA,US", "fake_key") } returns mockWeatherResponse1
+        coEvery { weatherService.getCurrentWeather("Ocean City,MD,US", "fake_key") } returns mockWeatherResponse2
 
         // Act
         viewModel.play()
 
         // Assert
         // Verify that weather service was called for both locations
-        coVerify { weatherService.getCurrentWeather("Waynesboro,PA", "fake_key") }
-        coVerify { weatherService.getCurrentWeather("Ocean City,MD", "fake_key") }
+        coVerify { weatherService.getCurrentWeather("Waynesboro,PA,US", "fake_key") }
+        coVerify { weatherService.getCurrentWeather("Ocean City,MD,US", "fake_key") }
         
         // Verify that the player was called to play the playlist
         verify { player.playPlaylist(any(), any()) }

@@ -4,8 +4,8 @@
     <string name="play">Play</string>
     <string name="owm_api_key">OpenWeatherMap API Key</string>
     <string name="zip_url">Audio Clips ZIP URL</string>
-    <string name="location1_query">Location 1 Query (e.g., Waynesboro,PA)</string>
-    <string name="location2_query">Location 2 Query (e.g., Ocean City,MD)</string>
+    <string name="location1_query">Location 1 Query (e.g., Waynesboro,PA,US)</string>
+    <string name="location2_query">Location 2 Query (e.g., Ocean City,MD,US)</string>
     <string name="save">Save</string>
     <string name="sync">Sync Audio</string>
 </resources>

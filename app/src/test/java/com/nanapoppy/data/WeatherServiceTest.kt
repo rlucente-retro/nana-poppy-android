@@ -55,15 +55,15 @@ class WeatherServiceTest {
                         "main": {
                             "temp": 72.5
                         },
-                        "name": "Test City"
+                        "name": "Test City,US"
                     }
                 """.trimIndent())
             mockWebServer.enqueue(mockResponse)
 
-            val response = service.getCurrentWeather("Test City", "fake_key")
+            val response = service.getCurrentWeather("Test City,US", "fake_key")
 
             assertEquals(72.5f, response.main.temp)
-            assertEquals("Test City", response.name)
+            assertEquals("Test City,US", response.name)
         }
     }
 
@@ -75,7 +75,7 @@ class WeatherServiceTest {
                 .setBody("""{"cod":401, "message": "Invalid API key"}""")
             mockWebServer.enqueue(mockResponse)
 
-            service.getCurrentWeather("Test City", "invalid_key")
+            service.getCurrentWeather("Test City,US", "invalid_key")
         }
     }
 }
