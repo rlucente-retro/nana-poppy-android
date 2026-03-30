@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Small Heart (Centered, shifted lower) -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:strokeColor="#E57373"
+        android:strokeWidth="1"
+        android:strokeLineCap="round"
+        android:pathData="M54,38 L47,31 C42,26 45,21 50,24 L54,27 L58,24 C63,21 66,26 61,31 Z" />
+
+    <!-- NANA (Left, shifted lower) -->
+    <!-- Hair Base -->
+    <path android:fillColor="#E0E0E0" android:pathData="M28,66 Q28,48 43,48 Q58,48 58,66 Z" />
+    <!-- Hair Texture/Waves -->
+    <path android:strokeColor="#BDBDBD" android:strokeWidth="1.5" android:strokeLineCap="round"
+        android:pathData="M35,50 Q43,53 51,50 M32,58 Q43,61 54,58" />
+    <!-- Bun -->
+    <path android:fillColor="#E0E0E0" android:strokeColor="#BDBDBD" android:strokeWidth="1"
+        android:pathData="M38,48 Q43,40 48,48" />
+    <!-- Face -->
+    <path android:fillColor="#FFE0B2" android:pathData="M32,66 Q32,80 43,80 Q54,80 54,66 Z" />
+    <!-- Eyes/Smile -->
+    <path android:strokeColor="#4A4A4A" android:strokeWidth="1" android:strokeLineCap="round"
+        android:pathData="M38,70 H39 M47,70 H48 M40,76 Q43,78 46,76" />
+    <!-- Glasses -->
+    <path android:strokeColor="#000000" android:strokeWidth="1"
+        android:pathData="M35,68 Q39,68 41,68 M45,68 Q49,68 51,68 M41,68 L45,68" />
+    <!-- Cardigan (Pink) -->
+    <path android:fillColor="#F06292" android:pathData="M32,80 Q43,90 54,80 L54,93 H32 Z" />
+    <path android:strokeColor="#F48FB1" android:strokeWidth="1" android:pathData="M43,80 V93" />
+
+    <!-- POPPY (Right, shifted lower) -->
+    <!-- Flat Cap (Brown) -->
+    <path android:fillColor="#5D4037" android:pathData="M54,63 Q54,50 69,50 Q84,50 84,63 Z" />
+    <path android:strokeColor="#3E2723" android:strokeWidth="2" android:pathData="M54,63 H84" />
+    <!-- Face -->
+    <path android:fillColor="#FFE0B2" android:pathData="M58,66 Q58,80 69,80 Q80,80 80,66 Z" />
+    <!-- Eyes/Smile -->
+    <path android:strokeColor="#4A4A4A" android:strokeWidth="1" android:strokeLineCap="round"
+        android:pathData="M64,70 H65 M73,70 H74 M66,76 Q69,78 72,76" />
+    <!-- Glasses -->
+    <path android:strokeColor="#000000" android:strokeWidth="1"
+        android:pathData="M61,68 H67 M71,68 H77 M67,68 H71" />
+    <!-- Shirt (Blue Checkered) -->
+    <path android:fillColor="#1E88E5" android:pathData="M58,80 Q69,90 80,80 L80,93 H58 Z" />
+    <path android:strokeColor="#64B5F6" android:strokeWidth="1" android:pathData="M58,86 H80 M64,80 V93 M74,80 V93" />
+    <!-- Bowtie -->
+    <path android:fillColor="#2E7D32" android:pathData="M65,82 L73,82 L69,78 Z" />
+
+</vector>

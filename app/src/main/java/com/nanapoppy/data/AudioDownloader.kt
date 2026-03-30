@@ -114,7 +114,10 @@ class AudioDownloader(private val context: Context) {
     private fun unzipStream(inputStream: java.io.InputStream): Boolean {
         try {
             val audioDir = File(context.filesDir, "audio")
-            if (!audioDir.exists()) audioDir.mkdirs()
+            if (audioDir.exists()) {
+                audioDir.deleteRecursively()
+            }
+            audioDir.mkdirs()
 
             ZipInputStream(inputStream).use { zipInputStream ->
                 val audioDirCanonicalPath = audioDir.canonicalPath + File.separator

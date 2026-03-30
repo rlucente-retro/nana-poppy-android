@@ -77,4 +77,34 @@ class AudioDownloaderTest {
         assertTrue(File(tempDir, "audio/child1/test.txt").exists())
         assertTrue(File(tempDir, "audio/child2/audio.mp3").exists())
     }
+
+    @Test
+    fun `unzipStream deletes existing audio directory contents before extracting`() = runBlocking {
+        // Pre-create an "audio" directory with some files
+        val audioDir = File(tempDir, "audio")
+        audioDir.mkdirs()
+        File(audioDir, "old-child/old-file.txt").apply {
+            parentFile?.mkdirs()
+            writeText("old content")
+        }
+        
+        // Create a mock zip in memory
+        val baos = ByteArrayOutputStream()
+        ZipOutputStream(baos).use { zos ->
+            zos.putNextEntry(ZipEntry("new-child/new-file.txt"))
+            zos.write("new content".toByteArray())
+            zos.closeEntry()
+        }
+        val zipData = baos.toByteArray()
+
+        mockWebServer.enqueue(MockResponse().setBody(Buffer().write(zipData)))
+
+        val success = downloader.downloadAndUnzip(mockWebServer.url("/audio.zip").toString())
+
+        assertTrue(success)
+        assertTrue(File(tempDir, "audio/new-child/new-file.txt").exists())
+        // Verify old file is gone
+        assertTrue(!File(tempDir, "audio/old-child/old-file.txt").exists())
+        assertTrue(!File(tempDir, "audio/old-child").exists())
+    }
 }
