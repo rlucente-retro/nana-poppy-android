@@ -5,9 +5,10 @@ The **Nana & Poppy** app is a personalized Android application designed to provi
 ## Features
 
 - **Personalized Voice Messages:** Plays audio clips of grandchildren speaking the time, date, and weather.
+- **Speaker Photos:** Displays a full-screen photo of the grandchild currently speaking, making the experience more personal.
 - **Dynamic Greeting:** Greets Nana and Poppy with "Good morning", "Afternoon", etc., based on the current time of day.
 - **Real-time Weather:** Fetches and speaks the current temperature for two configurable locations using the OpenWeatherMap API.
-- **Remote Content Sync:** Downloads and updates grandchild audio clips from a remotely hosted ZIP file.
+- **Remote Content Sync:** Downloads and updates grandchild audio clips and photos from a remotely hosted ZIP file.
 - **Secure Configuration:** Uses encrypted shared preferences to store sensitive information like API keys.
 
 ---
@@ -69,16 +70,18 @@ To fully personalize the app, you need to gather and organize audio clips for ea
 
 ### Directory Structure
 
-The ZIP file must contain a directory for each child. Each directory should contain the required MP3 files. For example:
+The ZIP file must contain a directory for each child. Each directory should contain the required MP3 files and a `photo.jpg` file for that child. For example:
 
 ```text
 audio.zip
 ├── owen/
+│   ├── photo.jpg
 │   ├── good.mp3
 │   ├── morning.mp3
 │   ├── location1.mp3
 │   └── ...
 ├── piper/
+│   ├── photo.jpg
 │   ├── good.mp3
 │   ├── morning.mp3
 │   ├── location1.mp3
@@ -123,11 +126,12 @@ Each child's directory must include the following MP3 files. Filenames must matc
 ## Usage
 
 1.  Ensure you have completed the **Configuration** and **Sync Audio** steps.
-2.  On the main screen, tap the **Play** button.
+2.  On the main screen, tap the **Play** button at the bottom center of the screen.
 3.  The app will:
     - Determine the current time and weather.
     - Generate a sequence of messages.
     - Randomly pick a child's voice for each part of the message.
+    - **Display the child's photo** as the background while their voice is playing.
     - Play the audio sequence in order.
 
 ---

@@ -46,6 +46,9 @@ class MainViewModel @JvmOverloads constructor(
     private val _status = MutableLiveData<String?>()
     val status: LiveData<String?> = _status
 
+    private val _currentSpeakerPhoto = MutableLiveData<File?>()
+    val currentSpeakerPhoto: LiveData<File?> = _currentSpeakerPhoto
+
     companion object {
         private fun createWeatherService(): WeatherService {
             val logging = HttpLoggingInterceptor()
@@ -79,6 +82,7 @@ class MainViewModel @JvmOverloads constructor(
 
         _isPlaying.value = true
         _status.value = null
+        _currentSpeakerPhoto.value = null
         viewModelScope.launch {
             val now = LocalDateTime.now()
             val temp1 = fetchWeather(settings.location1Query)
@@ -95,8 +99,12 @@ class MainViewModel @JvmOverloads constructor(
                 selectedChildren[3] to MessageGenerator.generateTempMsg("location2", temp2)
             )
 
-            player.playPlaylist(messages) {
+            player.playPlaylist(messages, { childId ->
+                val photoFile = File(getApplication<Application>().filesDir, "audio/$childId/photo.jpg")
+                _currentSpeakerPhoto.postValue(if (photoFile.exists()) photoFile else null)
+            }) {
                 _isPlaying.postValue(false)
+                _currentSpeakerPhoto.postValue(null)
             }
         }
     }

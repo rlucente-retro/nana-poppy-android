@@ -28,11 +28,20 @@ import java.io.File
 class AudioQueuePlayer(private val context: Context) {
     private var exoPlayer: ExoPlayer? = null
     private var onComplete: (() -> Unit)? = null
+    private var onSpeakerChange: ((String) -> Unit)? = null
 
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
                 onComplete?.invoke()
+            }
+        }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            mediaItem?.localConfiguration?.tag?.let { tag ->
+                if (tag is String) {
+                    onSpeakerChange?.invoke(tag)
+                }
             }
         }
     }
@@ -49,8 +58,13 @@ class AudioQueuePlayer(private val context: Context) {
         }
     }
 
-    fun playPlaylist(segments: List<Pair<String, List<String>>>, onComplete: () -> Unit) {
+    fun playPlaylist(
+        segments: List<Pair<String, List<String>>>,
+        onSpeakerChange: (String) -> Unit,
+        onComplete: () -> Unit
+    ) {
         this.onComplete = onComplete
+        this.onSpeakerChange = onSpeakerChange
         val player = ensurePlayer()
         player.stop()
         player.clearMediaItems()
@@ -60,7 +74,11 @@ class AudioQueuePlayer(private val context: Context) {
             words.forEach { word ->
                 val file = File(context.filesDir, "audio/$childId/$word.mp3")
                 if (file.exists()) {
-                    mediaItems.add(MediaItem.fromUri(Uri.fromFile(file)))
+                    val mediaItem = MediaItem.Builder()
+                        .setUri(Uri.fromFile(file))
+                        .setTag(childId)
+                        .build()
+                    mediaItems.add(mediaItem)
                 }
             }
         }
@@ -76,7 +94,7 @@ class AudioQueuePlayer(private val context: Context) {
     }
 
     fun playQueue(childId: String, words: List<String>, onComplete: () -> Unit) {
-        playPlaylist(listOf(childId to words), onComplete)
+        playPlaylist(listOf(childId to words), { }, onComplete)
     }
 
     private fun stopAndRelease() {

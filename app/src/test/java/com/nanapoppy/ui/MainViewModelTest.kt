@@ -88,6 +88,6 @@ class MainViewModelTest {
         coVerify { weatherService.getCurrentWeather("Ocean City,MD,US", "fake_key") }
         
         // Verify that the player was called to play the playlist
-        verify { player.playPlaylist(any(), any()) }
+        verify { player.playPlaylist(any(), any(), any()) }
     }
 }

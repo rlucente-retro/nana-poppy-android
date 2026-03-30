@@ -44,6 +44,16 @@ class MainActivity : AppCompatActivity() {
             binding.progressBar.visibility = if (isPlaying) View.VISIBLE else View.GONE
         }
 
+        viewModel.currentSpeakerPhoto.observe(this) { photoFile ->
+            if (photoFile != null && photoFile.exists()) {
+                binding.ivSpeakerPhoto.setImageURI(android.net.Uri.fromFile(photoFile))
+                binding.ivSpeakerPhoto.visibility = View.VISIBLE
+            } else {
+                binding.ivSpeakerPhoto.setImageDrawable(null)
+                binding.ivSpeakerPhoto.visibility = View.GONE
+            }
+        }
+
         viewModel.status.observe(this) { status ->
             status?.let {
                 android.widget.Toast.makeText(this, it, android.widget.Toast.LENGTH_LONG).show()
