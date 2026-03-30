@@ -5,11 +5,20 @@
     android:layout_height="match_parent">
 
     <ImageView
+        android:id="@+id/ivLogoBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/logo_full"
+        android:contentDescription="@null" />
+
+    <ImageView
         android:id="@+id/ivSpeakerPhoto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:contentDescription="@null" />
+        android:contentDescription="@null"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/btnPlay"

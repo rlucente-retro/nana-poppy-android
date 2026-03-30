@@ -42,6 +42,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.isPlaying.observe(this) { isPlaying ->
             binding.btnPlay.isEnabled = !isPlaying
             binding.progressBar.visibility = if (isPlaying) View.VISIBLE else View.GONE
+            binding.ivLogoBackground.visibility = if (isPlaying) View.GONE else View.VISIBLE
+            if (!isPlaying) {
+                binding.ivSpeakerPhoto.visibility = View.GONE
+            }
         }
 
         viewModel.currentSpeakerPhoto.observe(this) { photoFile ->
