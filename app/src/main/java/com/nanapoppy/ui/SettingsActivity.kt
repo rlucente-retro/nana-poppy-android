@@ -53,6 +53,8 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnSync.setOnClickListener {
             syncAudio()
         }
+
+        binding.tvRepoLink.movementMethod = android.text.method.LinkMovementMethod.getInstance()
     }
 
     private fun syncAudio() {
