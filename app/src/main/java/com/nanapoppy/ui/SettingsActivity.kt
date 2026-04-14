@@ -39,14 +39,10 @@ class SettingsActivity : AppCompatActivity() {
         // Load existing settings
         binding.etApiKey.setText(settings.owmApiKey)
         binding.etZipUrl.setText(settings.zipUrl)
-        binding.etLocation1Query.setText(settings.location1Query)
-        binding.etLocation2Query.setText(settings.location2Query)
 
         binding.btnSave.setOnClickListener {
             settings.owmApiKey = binding.etApiKey.text.toString()
             settings.zipUrl = binding.etZipUrl.text.toString()
-            settings.location1Query = binding.etLocation1Query.text.toString()
-            settings.location2Query = binding.etLocation2Query.text.toString()
             Toast.makeText(this, "Settings Saved", Toast.LENGTH_SHORT).show()
         }
 
@@ -69,9 +65,14 @@ class SettingsActivity : AppCompatActivity() {
         val downloader = AudioDownloader(this)
 
         lifecycleScope.launch {
-            val success = downloader.downloadAndUnzip(zipUrl)
+            val result = downloader.downloadAndUnzip(zipUrl)
 
-            if (success) {
+            if (result.success) {
+                if (result.location1 != null || result.location2 != null) {
+                    result.location1?.let { settings.location1Query = it }
+                    result.location2?.let { settings.location2Query = it }
+                    Toast.makeText(this@SettingsActivity, "Location query strings found in ZIP", Toast.LENGTH_SHORT).show()
+                }
                 val validation = downloader.validate()
                 showValidationDialog(validation)
             } else {

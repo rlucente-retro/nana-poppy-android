@@ -55,12 +55,10 @@ Once the app is installed, you must configure it via the **Settings** menu:
 1.  Open the app and tap the **Settings** icon (gear) in the top right.
 2.  **OpenWeatherMap API Key:** Enter your OWM API key.
 3.  **Audio ZIP URL:** Enter the direct download URL for your audio clips (e.g., `https://example.com/audio.zip`).
-4.  **Location Queries:**
-    *   **Location 1:** Enter the city name/query for the primary location (default: "Waynesboro,PA,US").
-    *   **Location 2:** Enter the city name/query for the secondary location (default: "Ocean City,MD,US").
+4.  **Location Queries:** Location queries are now automatically updated from the audio ZIP file. Ensure your ZIP file includes a `locations.json` file at the root (see [Audio Preparation Guide](#audio-preparation-guide)).
 5.  **Save & Sync:**
     *   Tap **Save** to store your configuration.
-    *   Tap **Sync Audio** to download and unzip the audio clips. The app will notify you when the sync is complete.
+    *   Tap **Sync Audio** to download and unzip the audio clips. The app will notify you when the sync is complete and if location query strings were found.
 
 ---
 
@@ -70,10 +68,11 @@ To fully personalize the app, you need to gather and organize audio clips for ea
 
 ### Directory Structure
 
-The ZIP file must contain a directory for each child. Each directory should contain the required MP3 files and a `photo.jpg` file for that child. For example:
+The ZIP file must contain a directory for each child and a `locations.json` file at the root. Each child's directory should contain the required MP3 files and a `photo.jpg` file for that child. For example:
 
 ```text
 audio.zip
+├── locations.json
 ├── owen/
 │   ├── photo.jpg
 │   ├── good.mp3
@@ -86,6 +85,17 @@ audio.zip
 │   ├── morning.mp3
 │   ├── location1.mp3
 │   └── ...
+```
+
+### Locations Configuration (`locations.json`)
+
+The `locations.json` file at the root of your ZIP should define the query strings for the two locations. This ensures the weather data matches the child's recordings (e.g., if they recorded "Waynesboro" for `location1`).
+
+```json
+{
+  "location1": "Waynesboro,PA,US",
+  "location2": "Ocean City,MD,US"
+}
 ```
 
 ### Phrase List

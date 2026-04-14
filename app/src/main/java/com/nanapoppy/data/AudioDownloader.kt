@@ -16,6 +16,8 @@
 
 package com.nanapoppy.data
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,6 +31,7 @@ class AudioDownloader(private val context: Context) {
     private val client = OkHttpClient.Builder()
         .followRedirects(true)
         .build()
+    private val gson = Gson()
 
     private fun convertGoogleDriveUrl(url: String): String {
         if (!url.contains("drive.google.com")) return url
@@ -46,35 +49,64 @@ class AudioDownloader(private val context: Context) {
         return "https://drive.google.com/uc?export=download&id=$fileId"
     }
 
-    suspend fun downloadAndUnzip(url: String): Boolean = withContext(Dispatchers.IO) {
+    data class SyncResult(
+        val success: Boolean,
+        val location1: String? = null,
+        val location2: String? = null
+    )
+
+    suspend fun downloadAndUnzip(url: String): SyncResult = withContext(Dispatchers.IO) {
         val convertedUrl = convertGoogleDriveUrl(url)
         val request = Request.Builder().url(convertedUrl).build()
         try {
             val response = client.newCall(request).execute()
-            if (!response.isSuccessful) return@withContext false
+            if (!response.isSuccessful) return@withContext SyncResult(false)
 
-            val body = response.body ?: return@withContext false
+            val body = response.body ?: return@withContext SyncResult(false)
             val contentType = body.contentType()?.toString()
             
             // If we got an HTML page instead of a zip, it might be a Google Drive "large file" warning
             // or just the wrong page.
-            if (contentType?.contains("text/html") == true) {
+            val success = if (contentType?.contains("text/html") == true) {
                 val html = body.string()
                 if (html.contains("confirm=")) {
                     val confirmToken = html.substringAfter("confirm=").substringBefore("&")
                     val confirmUrl = "$convertedUrl&confirm=$confirmToken"
                     val confirmRequest = Request.Builder().url(confirmUrl).build()
                     val confirmResponse = client.newCall(confirmRequest).execute()
-                    if (!confirmResponse.isSuccessful) return@withContext false
-                    return@withContext unzipStream(confirmResponse.body?.byteStream() ?: return@withContext false)
+                    if (!confirmResponse.isSuccessful) return@withContext SyncResult(false)
+                    unzipStream(confirmResponse.body?.byteStream() ?: return@withContext SyncResult(false))
+                } else {
+                    false
                 }
-                return@withContext false
+            } else {
+                unzipStream(body.byteStream())
             }
 
-            unzipStream(body.byteStream())
+            if (success) {
+                val locations = parseLocations()
+                SyncResult(true, locations.first, locations.second)
+            } else {
+                SyncResult(false)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
-            false
+            SyncResult(false)
+        }
+    }
+
+    private fun parseLocations(): Pair<String?, String?> {
+        val locationsFile = File(context.filesDir, "audio/locations.json")
+        if (!locationsFile.exists()) return Pair(null, null)
+        
+        return try {
+            val content = locationsFile.readText()
+            val type = object : TypeToken<Map<String, String>>() {}.type
+            val locations: Map<String, String> = gson.fromJson(content, type)
+            Pair(locations["location1"], locations["location2"])
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Pair(null, null)
         }
     }
 

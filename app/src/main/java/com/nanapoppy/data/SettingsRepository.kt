@@ -44,11 +44,11 @@ class SettingsRepository(context: Context) {
         set(value) = securePrefs.edit().putString("zip_url", value).apply()
 
     var location1Query: String
-        get() = prefs.getString("location1_query", null) ?: com.nanapoppy.BuildConfig.LOCATION1_QUERY.ifBlank { "Waynesboro,PA,US" }
+        get() = prefs.getString("location1_query", null) ?: "Waynesboro,PA,US"
         set(value) = prefs.edit().putString("location1_query", value).apply()
 
     var location2Query: String
-        get() = prefs.getString("location2_query", null) ?: com.nanapoppy.BuildConfig.LOCATION2_QUERY.ifBlank { "Ocean City,MD,US" }
+        get() = prefs.getString("location2_query", null) ?: "Ocean City,MD,US"
         set(value) = prefs.edit().putString("location2_query", value).apply()
 
     fun isConfigured(): Boolean {

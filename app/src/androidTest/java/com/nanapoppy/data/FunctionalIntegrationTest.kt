@@ -63,7 +63,7 @@ class FunctionalIntegrationTest {
         }
 
         // Test location 1
-        val loc1 = BuildConfig.LOCATION1_QUERY
+        val loc1 = "Waynesboro,PA,US"
         if (loc1.isNotBlank()) {
             val response1 = weatherService.getCurrentWeather(loc1, apiKey)
             assertNotNull("Weather response for $loc1 should not be null", response1)
@@ -72,7 +72,7 @@ class FunctionalIntegrationTest {
         }
 
         // Test location 2
-        val loc2 = BuildConfig.LOCATION2_QUERY
+        val loc2 = "Ocean City,MD,US"
         if (loc2.isNotBlank()) {
             val response2 = weatherService.getCurrentWeather(loc2, apiKey)
             assertNotNull("Weather response for $loc2 should not be null", response2)
@@ -93,8 +93,8 @@ class FunctionalIntegrationTest {
         // Ensure the audio directory is clean or at least exists
         val audioDir = File(context.filesDir, "audio")
         
-        val success = audioDownloader.downloadAndUnzip(zipUrl)
-        assertTrue("Audio download and unzip should be successful", success)
+        val result = audioDownloader.downloadAndUnzip(zipUrl)
+        assertTrue("Audio download and unzip should be successful", result.success)
         
         // Verify that some files were actually created in the audio directory
         assertTrue("Audio directory should exist", audioDir.exists())

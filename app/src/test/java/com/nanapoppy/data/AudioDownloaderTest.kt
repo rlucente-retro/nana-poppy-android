@@ -32,6 +32,9 @@ import java.util.zip.ZipOutputStream
 import io.mockk.every
 import io.mockk.mockk
 
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+
 class AudioDownloaderTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var downloader: AudioDownloader
@@ -71,11 +74,33 @@ class AudioDownloaderTest {
 
         mockWebServer.enqueue(MockResponse().setBody(Buffer().write(zipData)))
 
-        val success = downloader.downloadAndUnzip(mockWebServer.url("/audio.zip").toString())
+        val result = downloader.downloadAndUnzip(mockWebServer.url("/audio.zip").toString())
 
-        assertTrue(success)
+        assertTrue(result.success)
+        assertNull(result.location1)
+        assertNull(result.location2)
         assertTrue(File(tempDir, "audio/child1/test.txt").exists())
         assertTrue(File(tempDir, "audio/child2/audio.mp3").exists())
+    }
+
+    @Test
+    fun `downloadAndUnzip parses locations from locations_json`() = runBlocking {
+        // Create a mock zip with locations.json
+        val baos = ByteArrayOutputStream()
+        ZipOutputStream(baos).use { zos ->
+            zos.putNextEntry(ZipEntry("locations.json"))
+            zos.write("{\"location1\": \"City1,XX\", \"location2\": \"City2,YY\"}".toByteArray())
+            zos.closeEntry()
+        }
+        val zipData = baos.toByteArray()
+
+        mockWebServer.enqueue(MockResponse().setBody(Buffer().write(zipData)))
+
+        val result = downloader.downloadAndUnzip(mockWebServer.url("/audio.zip").toString())
+
+        assertTrue(result.success)
+        assertEquals("City1,XX", result.location1)
+        assertEquals("City2,YY", result.location2)
     }
 
     @Test
@@ -99,9 +124,9 @@ class AudioDownloaderTest {
 
         mockWebServer.enqueue(MockResponse().setBody(Buffer().write(zipData)))
 
-        val success = downloader.downloadAndUnzip(mockWebServer.url("/audio.zip").toString())
+        val result = downloader.downloadAndUnzip(mockWebServer.url("/audio.zip").toString())
 
-        assertTrue(success)
+        assertTrue(result.success)
         assertTrue(File(tempDir, "audio/new-child/new-file.txt").exists())
         // Verify old file is gone
         assertTrue(!File(tempDir, "audio/old-child/old-file.txt").exists())
